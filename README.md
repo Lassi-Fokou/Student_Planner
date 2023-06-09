@@ -1,6 +1,6 @@
 # Student's agenda
 
-![Image](https://github.com/Lassi-Fokou/Student_Planner/blob/master/snapshot.gif)
+![Image](https://github.com/Lassi-Fokou/Student_Planner/blob/main/snapshot.gif)
 
 ## Problem description
 Many students of UB (University of BUEA) match problems of information (often caused by the disturbance of the network):
