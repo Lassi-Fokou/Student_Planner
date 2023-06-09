@@ -1,0 +1,137 @@
+<div class="container">
+    <span class="row"><hr size="#"></span>
+    <div class="row">
+        <span class="col-1"></span>
+        <button class="btn btn-primary col btn-sm" onclick="App.views.add_timetable()">Add Timetable</button>
+        <span class="col-1"></span>
+    </div>
+    <hr size="#">
+    <h3 class="row">
+        <span class="col-1"></span>
+        <span class="col">Choose a Timetable</span>
+        <span class="col-1"></span>
+    </h3>
+    <br>
+    <div class="row">
+        <div class="container-fluid" id='block'>
+            <div>
+                <div class="row" onclick="$(this).parent().find('#child').fadeToggle();">
+                    <div class="col-3">
+                        <i class="fas fa-2x fa-calendar text-success"></i>
+                    </div>
+                    <div class="col">
+                        <h4>{{name}}</h4>
+                    </div>
+                </div>
+                <br>
+                <div class="row" id='child' style="display: none;">
+                    <div class="card" style="width: 100%;">
+                        <p class="card-body">
+                            <b>Followers:</b> {{followers}}<br>
+                            <b>Description:</b><br>{{description}}<br>
+                            <b>Admin:</b> {{owner}}<br>
+                            <b>Moderators:</b> {{moderators}}<br>
+                            <b {{admin_panel}}>Shared code:</b> {{timetable_code}}<br>
+                        </p>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm" onclick="App.vars.tmp.to_follow={{pk}}" data-toggle="modal" data-target="#follow_timetable" {{follow}}>Follow</button>
+                            <button class="btn btn-warning btn-sm" onclick="App.views.choose_timetable({{pk}},1)" {{unfollow}}>Unfollow</button>
+                            <!-- Button trigger modal -->
+                            <button class="btn btn-danger btn-sm" onclick="App.vars.tmp.to_delete={{pk}}" data-toggle="modal" data-target="#delete_timetable" {{admin_panel}}>Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <hr size="#">
+            </div>
+        </div>
+        <hr size="#">
+        <div class="row">
+            <span class="col-1"></span>
+            <div class="col">
+                <button class="btn btn-dark btn-sm" onclick="App.views.index()">Return to home</button>
+            </div>
+            <span class="col-1"></span>
+        </div>
+    </div>
+    <div class="row">
+        <span class="col-1"></span>
+        <span class="col" id="error"></span>
+        <span class="col-1"></span>
+    </div>
+    <br>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="delete_timetable" tabindex="-1" aria-labelledby="delete_timetableLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delete_timetableLabel">Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        <span class="text">All elements linked to this timetable will be deleted.<br>Are you sure to delete it?</span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#delete_timetable').on('hidden.bs.modal', function (event) {App.views.delete_timetable(App.vars.tmp.to_delete)})">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="follow_timetable" tabindex="-1" aria-labelledby="follow_timetableLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="follow_timetableLabel">Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        <span class="text">Enter the timetable code: </span>
+        <input id='timetable_code' type="text" name="code">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#follow_timetable').on('hidden.bs.modal', function (event) {App.views.choose_timetable(App.vars.tmp.to_follow,0,$('#timetable_code').val())})">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    App.vars.tmp.$el=$('#block');
+    App.vars.tmp.$html=App.vars.tmp.$el.html();
+    if (App.models.full_timetables.length) {
+        App.vars.tmp.$el.empty();
+        for (var timetable_id = 0; timetable_id < App.models.full_timetables.length; timetable_id++) {
+            // We verify if already choosed or not
+            App.vars.tmp.followed = 0;
+            for (var followed_timetable_id = 0; followed_timetable_id < App.models.timetables.length; followed_timetable_id++) {
+                if (App.models.timetables[followed_timetable_id].pk == App.models.full_timetables[timetable_id].pk) {
+                    App.vars.tmp.followed = 1;
+                    break;
+                };
+            }
+            App.vars.tmp.$el.append(App.vars.tmp.$html
+                .replace('{{timetable_code}}', App.models.full_timetables[timetable_id].code)
+                .replace('{{pk}}', App.models.full_timetables[timetable_id].pk)
+                .replace('{{pk}}', App.models.full_timetables[timetable_id].pk)
+                .replace('{{pk}}', App.models.full_timetables[timetable_id].pk)
+                .replace('{{follow}}', App.vars.tmp.followed ? 'hidden' : '')
+                .replace('{{unfollow}}', App.vars.tmp.followed ? '' : 'hidden')
+                .replace('{{name}}', App.models.full_timetables[timetable_id].name)
+                .replace('{{description}}', App.models.full_timetables[timetable_id].description)
+                .replace('{{owner}}', App.models.full_timetables[timetable_id].owner.username)
+                .replace('{{followers}}', App.models.full_timetables[timetable_id].followers)
+                .replace('{{moderators}}', App.models.full_timetables[timetable_id].moderators.length)
+                .replace('{{admin_panel}}', (App.models.full_timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk})) ? '' : 'hidden')
+                .replace('{{admin_panel}}', (App.models.full_timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk})) ? '' : 'hidden')
+            );
+        };
+    } else {
+        App.vars.tmp.$el[0].innerHTML = 'No timetable for the moment.';
+    };
+    App.vars.tmp.$error = $('#error');
+    App.vars.tmp.$error.empty();
+    for (var i = 0; i < App.vars.errors.length; i++) {
+        $error.append('<h4 class="text-danger text-center">'+App.vars.errors[i]+'</h4>');
+    };
+    App.views.splash(null, 'hide');
+</script>

@@ -1,0 +1,94 @@
+<button class="btn btn-info form-control" id="next_day">Next day</button>
+<br>
+<div class="row"><hr size='#'></div>
+<div class="row">
+    <div class="container-fluid" id='block'>
+        <div id="parent">
+            <div class="row" onclick="$(this).parent().find('#child').fadeToggle();">
+                <div class="col-3">
+                    <i class="fas fa-4x fa-book text-success"></i>
+                </div>
+                <div class="col">
+                    <h4>{{name}}</h4>
+                    <i>from {{timetable}}</i>
+                </div>
+            </div>
+            <br>
+            <div class="row" id='child' style="display: none;">
+                <div class="card" style="width: 100%;">
+                    <div class="card-body">
+                        <b>Description:</b> {{description}}<br>
+                        <b>Location:</b> {{location}}<br>
+                        <b>Interested:</b> {{interested}}<br>
+                        <b>Status:</b> {{status}}<br>
+                        <b>Date:</b> {{date}}<br>
+                        <b>Begin:</b> {{begin}}<br>
+                        <b>End:</b> {{end}}<br>
+                        <b>Last updated:</b> {{updated}}<br>
+                    </div>
+                    <div class="card-footer" {{admin_panel}}>
+                        <button class="btn btn-warning btn-sm" onclick='App.views.update_event({{id}})'>Update</button>
+                        <!-- Button trigger modal -->
+                        <button class="btn btn-danger btn-sm" onclick='App.vars.tmp.to_delete={{event_pk}}' data-toggle="modal" data-target="#delete_event">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <hr size="#">
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="delete_event" tabindex="-1" aria-labelledby="delete_eventLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delete_eventLabel">Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        <span class="text">Are you sure to delete it?</span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#delete_event').on('hidden.bs.modal', function (event) {App.views.delete_event(App.vars.tmp.to_delete)})">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- We duplicate the data -->
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    App.vars.tmp.$el = $('#block');
+    App.vars.tmp.$html = App.vars.tmp.$el.html();
+    if (App.models.events.length) {
+        App.vars.tmp.$el.empty();
+        for (var event_id = 0; event_id < App.models.events.length; event_id++) {
+            // We verify if owner
+            App.vars.tmp.owner = 0;
+            for (var timetable_id = 0; timetable_id < App.models.timetables.length; timetable_id++) {
+                if (App.models.timetables[timetable_id].pk == App.models.events[event_id].timetable_pk) {
+                    App.vars.tmp.owner = App.models.timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk});
+                    break;
+                };
+            };
+            App.vars.tmp.$el.append(App.vars.tmp.$html
+                .replace('{{name}}', App.models.events[event_id].name)
+                .replace('{{timetable}}', App.models.timetables[timetable_id].name)
+                .replace('{{description}}', App.models.events[event_id].description)
+                .replace('{{location}}', App.models.events[event_id].location.name)
+                .replace('{{interested}}', App.models.events[event_id].interested)
+                .replace('{{status}}', App.vars.STATUS_CHOICES_DICT[App.models.events[event_id].status])
+                .replace('{{date}}', App.models.events[event_id].date)
+                .replace('{{begin}}', App.models.events[event_id].begin)
+                .replace('{{end}}', App.models.events[event_id].end)
+                .replace('{{updated}}', App.models.events[event_id].updated)
+                .replace('{{admin_panel}}', App.vars.tmp.owner ? '' : 'hidden')
+                .replace('{{id}}', event_id)
+                .replace('{{event_pk}}', App.models.events[event_id].pk)
+            );
+        };
+    } else {
+        App.vars.tmp.$el[0].innerHTML = 'No events for the moment.';
+    };
+    App.views.splash(null, 'hide');
+</script>

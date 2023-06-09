@@ -1,0 +1,120 @@
+<div class="container">
+    <span class="row"><hr size="#"></span>
+    <h3 class="row">
+        <span class="col-1"></span>
+        <span class="col" id='header'>Add a asset</span>
+        <span class="col-1"></span>
+    </h3>
+    <div class="row">
+        <span class="col-1"></span>
+        <form class="form col" action="#">
+            <div class="form-group">
+                <label for="asset_name">Name</label>
+                <input type="text" class="form-control" id="asset_name" maxlength="64" placeholder="Enter the asset's name">
+            </div>
+            <div class="form-group">
+                <label for="asset_description">Description</label>
+                <textarea type="text" class="form-control" id="asset_description" maxlength="1024" placeholder="Enter the asset's description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="asset_timetable_pk">Timetable</label>
+                <select class="form-control" id="asset_timetable_pk" onchange="App.vars.tmp.load_category_and_course()">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="asset_category_pk">Category</label>
+                <select class="form-control" id="asset_category_pk">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="asset_course_pk">Course</label>
+                <select class="form-control" id="asset_course_pk">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="asset_media">Media</label>
+                <input type='file' class="form-control-file" id="asset_media"></input>
+            </div>
+            <div class="form-group">
+                <input class="btn btn-sm btn-primary" type="submit" onclick="App.vars.tmp.add_asset()">
+            </div>
+            <hr size="#">
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-dark btn-sm" onclick="App.views.admin()">Return to administration's panel</button>
+                </div>
+            </div>
+        </form>
+        <span class="col-1"></span>
+    </div>
+    <div class="row">
+        <span class="col-1"></span>
+        <span class="col" id="asset_error"></span>
+        <span class="col-1"></span>
+    </div>
+    <br>
+</div>
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    // We define each element that we will use
+    App.vars.tmp.$name = $('#asset_name');
+    App.vars.tmp.$description = $('#asset_description');
+    App.vars.tmp.$category_pk = $('#asset_category_pk');
+    App.vars.tmp.$course_pk = $('#asset_course_pk');
+    App.vars.tmp.$media = $('#asset_media');
+    App.vars.tmp.$timetable_pk = $('#asset_timetable_pk');
+    App.vars.tmp.add_asset = function () {
+        name = App.vars.tmp.$name.val();
+        description = App.vars.tmp.$description.val();
+        category_pk = App.vars.tmp.$category_pk.val();
+        course_pk = App.vars.tmp.$course_pk.val();
+        files = App.vars.tmp.$media[0].files;
+        timetable_pk = App.vars.tmp.$timetable_pk.val();
+        App.views.add_asset(name, description, category_pk, course_pk, files, timetable_pk);
+    };
+    App.vars.tmp.load_category_and_course = function () {
+        choice = App.vars.tmp.$timetable_pk.val();
+        App.vars.tmp.$category_pk.empty();
+        App.vars.tmp.$course_pk.empty();
+        if(choice) {
+            Addons.request('/api/user/timetable/'+choice+'/categories', null, function (d) {
+                if(d.code == 200) {
+                    for (var i = 0; i < d.result.length; i++) {
+                        App.vars.tmp.$category_pk.append("<option value='"+d.result[i].pk+"'>"+d.result[i].name+"</option");
+                    };
+                };
+            }, false);
+            Addons.request('/api/user/timetable/'+choice+'/courses', null, function (d) {
+                if(d.code == 200) {
+                    for (var i = 0; i < d.result.length; i++) {
+                        App.vars.tmp.$course_pk.append("<option value='"+d.result[i].pk+"'>"+d.result[i].name+"</option");
+                    };
+                };
+            }, false);
+        };
+    };
+    // We load timetable
+    for (var timetable_id = 0; timetable_id < App.models.timetables.length; timetable_id++) {
+        if (App.models.timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk})) {
+            App.vars.tmp.$timetable_pk.append("<option value='"+App.models.timetables[timetable_id].pk+"'>"+App.models.timetables[timetable_id].name+"</option>");
+        };
+    };
+    App.vars.tmp.$error = $('#asset_error');
+    App.vars.tmp.$error.empty();
+    for (var i = 0; i < App.vars.errors.length; i++) {
+        App.vars.tmp.$error.append('<h4 class="text-danger text-center">'+App.vars.errors[i]+'</h4>');
+    };
+    // We load previous data form if present
+    if (App.vars.tmp.form) {
+        App.vars.tmp.$name.val(App.vars.tmp.form.name);
+        App.vars.tmp.$description.val(App.vars.tmp.form.description);
+        App.vars.tmp.$timetable_pk.val(App.vars.tmp.form.timetable_pk);
+        App.vars.tmp.load_category_and_course();
+        App.vars.tmp.$category_pk.val(App.vars.tmp.form.category_pk);
+        App.vars.tmp.$course_pk.val(App.vars.tmp.form.course_pk);
+    };
+    App.views.splash(null, 'hide');
+</script>

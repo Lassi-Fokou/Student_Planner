@@ -1,0 +1,51 @@
+<div class="container">
+    <span class="row"><hr size="#"></span>
+    <h3 class="row">
+        <span class="col-1"></span>
+        <span class="col">Send an feedback</span>
+        <span class="col-1"></span>
+    </h3>
+    <h5 class="row">
+        <span class="col-1"></span>
+        <span class="col">
+            It's always a pleasure to hear from you!
+            Ask us a question, or tell us what you love or hate about this application.
+            We'll get back to you over email ASAP.
+        </span>
+        <span class="col-1"></span>
+    </h5>
+    <div class="row">
+        <span class="col-1"></span>
+        <form class="form col" action="#">
+            <div class="form-group">
+                <textarea type="text" class="form-control" id="feedback" maxlength="1024" placeholder="Enter the message"></textarea>
+            </div>
+            <div class="form-group">
+                <input class="btn btn-sm btn-primary" type="submit" onclick="App.vars.tmp.feedback()" value="Send">
+                <input class="btn btn-sm btn-secondary" type="submit" onclick="window.open('/api/admin/feedback/read')" value="Admin">
+            </div>
+            <hr size="#">
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-dark btn-sm" onclick="App.views.profil()">Return to profil</button>
+                </div>
+            </div>
+        </form>
+        <span class="col-1"></span>
+    </div>
+    <br>
+</div>
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    // We define element that we will use
+    App.vars.tmp.$message = $('#feedback');
+    App.vars.tmp.feedback = function () {
+        message = App.vars.tmp.$message.val();
+        App.views.feedback(message);
+    };
+    // We load previous data form if present
+    if (App.vars.tmp.form) {
+        App.vars.tmp.$message.val(App.vars.tmp.form.message);
+    };
+    App.views.splash(null, 'hide');
+</script>

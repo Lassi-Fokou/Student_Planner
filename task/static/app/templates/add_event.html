@@ -1,0 +1,132 @@
+<div class="container">
+    <span class="row"><hr size="#"></span>
+    <h3 class="row">
+        <span class="col-1"></span>
+        <span class="col" id='header'>Add an event</span>
+        <span class="col-1"></span>
+    </h3>
+    <div class="row">
+        <span class="col-1"></span>
+        <form class="form col" action="#">
+            <div class="form-group">
+                <label for="event_name">Name</label>
+                <input type="text" class="form-control" id="event_name" maxlength="64" placeholder="Enter the name">
+            </div>
+            <div class="form-group">
+                <label for="event_description">Description</label>
+                <textarea type="text" class="form-control" id="event_description" maxlength="1024" placeholder="Enter the description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="event_status">Status</label>
+                <select class="form-control" id="event_status">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="event_date">Date</label>
+                <input type="date" class="form-control" id="event_date" placeholder="YYYY-MM-DD (2010-10-02)">
+            </div>
+            <div class="form-group">
+                <label for="event_begin">Begin</label>
+                <input type="time" class="form-control" id="event_begin" placeholder="HH:MM (15:23)">
+            </div>
+            <div class="form-group">
+                <label for="event_end">End</label>
+                <input type="time" class="form-control" id="event_end" placeholder="HH:MM (10:21)">
+            </div>
+            <div class="form-group">
+                <label for="event_timetable_pk">Timetable</label>
+                <select class="form-control" id="event_timetable_pk" onchange="App.vars.tmp.load_location()">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="event_location_pk">Location</label>
+                <select class="form-control" id="event_location_pk">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input class="btn btn-primary btn-sm" type="submit" onclick="App.vars.tmp.add_event()">
+            </div>
+            <hr size="#">
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-dark btn-sm" onclick="App.views.admin()">Return to administration's panel</button>
+                </div>
+            </div>
+        </form>
+        <span class="col-1"></span>
+    </div>
+    <div class="row">
+        <span class="col-1"></span>
+        <span class="col" id="event_error"></span>
+        <span class="col-1"></span>
+    </div>
+    <br>
+</div>
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    // We define element that we will use
+    App.vars.tmp.$name = $('#event_name');
+    App.vars.tmp.$description = $('#event_description');
+    App.vars.tmp.$status = $('#event_status');
+    App.vars.tmp.$date = $('#event_date');
+    App.vars.tmp.$begin = $('#event_begin');
+    App.vars.tmp.$end = $('#event_end');
+    App.vars.tmp.$location_pk = $('#event_location_pk');
+    App.vars.tmp.$timetable_pk = $('#event_timetable_pk');
+    App.vars.tmp.add_event = function () {
+        name = App.vars.tmp.$name.val();
+        description = App.vars.tmp.$description.val();
+        status = App.vars.tmp.$status.val();
+        date = App.vars.tmp.$date.val();
+        begin = App.vars.tmp.$begin.val();
+        end = App.vars.tmp.$end.val();
+        location_pk = App.vars.tmp.$location_pk.val();
+        timetable_pk = App.vars.tmp.$timetable_pk.val();
+        App.views.add_event(name,description,status,date,begin,end,location_pk,timetable_pk);
+    };
+    App.vars.tmp.load_location = function () {
+        choice = App.vars.tmp.$timetable_pk.val();
+        App.vars.tmp.$location_pk.empty();
+        if(choice) {
+            Addons.request('/api/user/timetable/'+choice+'/locations', null, function (d) {
+                if(d.code == 200) {
+                    for (var i = 0; i < d.result.length; i++) {
+                        App.vars.tmp.$location_pk.append("<option value='"+d.result[i].pk+"'>"+d.result[i].name+"</option");
+                    };
+                };
+            }, false);
+        };
+    };
+    // We load status
+    App.vars.tmp.$status.empty()
+    for (var i = 0; i < App.vars.STATUS_CHOICES.length; i++) {
+        App.vars.tmp.$status.append("<option value='"+App.vars.STATUS_CHOICES[i][0]+"'>"+App.vars.STATUS_CHOICES[i][1]+"</option");
+    };
+    // We load timetable
+    for (var timetable_id = 0; timetable_id < App.models.timetables.length; timetable_id++) {
+        if (App.models.timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk})) {
+            App.vars.tmp.$timetable_pk.append("<option value='"+App.models.timetables[timetable_id].pk+"'>"+App.models.timetables[timetable_id].name+"</option>");
+        };
+    };
+    App.vars.tmp.$error = $('#event_error');
+    App.vars.tmp.$error.empty();
+    for (var i = 0; i < App.vars.errors.length; i++) {
+        App.vars.tmp.$error.append('<h4 class="text-danger text-center">'+App.vars.errors[i]+'</h4>');
+    };
+    // We load previous data form if present
+    if (App.vars.tmp.form) {
+        App.vars.tmp.$name.val(App.vars.tmp.form.name);
+        App.vars.tmp.$description.val(App.vars.tmp.form.description);
+        App.vars.tmp.$status.val(App.vars.tmp.form.status);
+        App.vars.tmp.$date.val(App.vars.tmp.form.date);
+        App.vars.tmp.$begin.val(App.vars.tmp.form.begin);
+        App.vars.tmp.$end.val(App.vars.tmp.form.end);
+        App.vars.tmp.$timetable_pk.val(App.vars.tmp.form.timetable_pk);
+        App.vars.tmp.load_location();
+        App.vars.tmp.$location_pk.val(App.vars.tmp.form.location_pk);
+    };
+    App.views.splash(null, 'hide');
+</script>

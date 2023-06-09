@@ -1,0 +1,107 @@
+<div class="card">
+    <div id="header" class="card-header text-center">
+        <button class="btn btn-primary" onclick="App.views.home()">
+            Back to Home
+        </button>
+    </div>
+    <div id="body" class="card-body container-fluid">
+        <!-- -->
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="delete_element" tabindex="-1" aria-labelledby="delete_elementLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delete_elementLabel">Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        <span class="text">Are you sure to delete it?</span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#delete_element').on('hidden.bs.modal', function (event) {App.vars.tmp.action()})">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+    App.views.splash(null, 'show');
+    (function () {
+        // We config the calendar
+        moment.locale('en');
+        var datas = [];
+        for (var i = 0; i < App.models.classes.length; i++) {
+            datas.push({data: App.models.classes[i], id:i});
+        };
+        for (var i = 0; i < App.models.events.length; i++) {
+            datas.push({data: App.models.events[i], id:i});
+        };
+        // We config the calendar
+        moment.locale('en');
+        /**
+            * Many events
+        */
+        var events = [
+            /*{
+                start: now.startOf('week').add(9, 'h').format('X'),
+                end: now.startOf('week').add(10, 'h').format('X'),
+                title: '1',
+                content: 'Hello World! <br> <p>Foo Bar</p>',
+                category:'Professionnal'
+            },*/
+        ];
+        for (var i=0; i < datas.length; i++) {
+            var now = moment(datas[i].data.date);
+            var begin = datas[i].data.begin.split(':');
+            var end = datas[i].data.end.split(':');
+            for (var timetable_id = 0; timetable_id < App.models.timetables.length; timetable_id++) {
+                if (App.models.timetables[timetable_id].pk == datas[i].data.location.timetable_pk) {
+                    App.vars.tmp.owner = App.models.timetables[timetable_id].moderators.find(function (x) {return x==App.models.user.pk});
+                    break;
+                };
+            };
+            events.push({
+                start: now.startOf('day').add(begin[0], 'h').add(begin[1], 'm').format('X'),
+                end: now.startOf('day').add(end[0], 'h').add(end[1], 'm').format('X'),
+                title: datas[i].data.course ? datas[i].data.course.name : datas[i].data.name,
+                content: "<b>Status:</b> "+App.vars.STATUS_CHOICES_DICT[datas[i].data.status]+"<br>\
+                "+(datas[i].data.course ? ("<b>Attendance Done:</b> "+datas[i].data.attendance_done+"<br>") : "")+"\
+                <b>Venue:</b> "+datas[i].data.location.name+"<br>\
+                <b>Last update:</b> "+datas[i].data.updated+"<br>\
+                <b>Description:</b> "+datas[i].data.description+"<br>"+(App.vars.tmp.owner ? ("\
+                <hr size='#'>\
+                <button class='btn btn-warning btn-sm' onclick='$(\"#calendar-modal\").on(\"hidden.bs.modal\", function (event) {App.views.update_"+(datas[i].data.course ? "lesson" : "event")+"("+datas[i].id+")})' data-dismiss='modal' data-target='#calendar-modal'>Update</button>\
+                <!-- Button trigger modal -->\
+                <button class='btn btn-danger btn-sm' onclick='$(\"#calendar-modal\").on(\"hidden.bs.modal\", function (event) {App.vars.tmp.action=function () {App.views.delete_"+(datas[i].data.course ? "lesson" : "event")+"("+datas[i].data.pk+")}});$(\"#delete_element\").modal(\"show\")' data-dismiss='modal' data-target='#calendar-modal'>Delete</button>") : ""),
+                category: datas[i].data.course ? datas[i].data.course.code : "Event"
+            });
+        };
+        /**
+            * A daynote
+        */
+        var daynotes = [
+            /*{
+                time: now.startOf('week').add(15, 'h').add(30, 'm').format('X'),
+                title: 'Leo\'s holiday',
+                content: 'yo',
+                category: 'holiday'
+            },*/
+        ];
+        /**
+        * Init the calendar
+        */
+        var calendar = $('#body').Calendar({
+            locale: 'en',
+            weekday: {
+                timeline: {
+                    intervalMinutes: 30,
+                    fromHour: 7
+                },
+            },
+            events: events,
+            daynotes: daynotes
+        }).init();
+    })();
+    App.views.splash(null, 'hide');
+</script>
